@@ -1,5 +1,5 @@
 -- Load library
-local FallensUI = loadstring(game:HttpGet("YOUR_HOSTED_URL"))()
+local FallensUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/FallensHub/Fallens-UI/refs/heads/main/Library.lua"))()
 
 -- Create window
 local Window = FallensUI:Window({
