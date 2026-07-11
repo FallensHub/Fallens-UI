@@ -7614,6 +7614,11 @@ function Fallens.new(Config : Window)
 		Highlight.Size = UDim2.new(1, -17, 1, 0)
 		Highlight.ZIndex = 2
 
+		table.insert(Fallens.Elements.Highlight,{
+			Element = Highlight,
+			Property = "BackgroundColor3"
+		});
+
 		UICorner.CornerRadius = UDim.new(0, 6)
 		UICorner.Parent = Highlight
 
@@ -8929,6 +8934,11 @@ function Fallens.new(Config : Window)
 			Highlight.Size = UDim2.new(1, -17, 1, 0)
 			Highlight.ZIndex = 2
 
+			table.insert(Fallens.Elements.Highlight,{
+				Element = Highlight,
+				Property = "BackgroundColor3"
+			});
+
 			UICorner.CornerRadius = UDim.new(0, 6)
 			UICorner.Parent = Highlight
 
@@ -9538,6 +9548,7 @@ function Fallens.new(Config : Window)
 	do
 		local CloseWindow = Instance.new("Frame")
 		local UICorner = Instance.new("UICorner")
+		local UIStroke = Instance.new("UIStroke")
 		local ImageLabel = Instance.new("ImageLabel")
 
 		CloseWindow.Name = Fallens:_RandomString()
@@ -9554,12 +9565,24 @@ function Fallens.new(Config : Window)
 		CloseWindow.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		CloseWindow.BorderSizePixel = 0
 		CloseWindow.Position = UDim2.new(1, -10, 0, 10)
-		CloseWindow.Size = UDim2.new(0, 0, 0, 23)
+		CloseWindow.Size = UDim2.new(0, 0, 0, 45)
 		CloseWindow.ZIndex = 150
 		CloseWindow.ClipsDescendants = true;
 
-		UICorner.CornerRadius = UDim.new(0, 6)
+		UICorner.CornerRadius = UDim.new(0, 5)
 		UICorner.Parent = CloseWindow
+
+		UIStroke.Name = Fallens:_RandomString()
+		UIStroke.Parent = CloseWindow
+		UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		UIStroke.Color = Fallens.Colors.Highlight
+		UIStroke.Thickness = 1
+		UIStroke.Transparency = 0
+
+		table.insert(Fallens.Elements.Highlight,{
+			Element = UIStroke,
+			Property = "Color"
+		});
 
 		ImageLabel.Parent = CloseWindow
 		ImageLabel.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -9581,7 +9604,7 @@ function Fallens.new(Config : Window)
 				ImageLabel.ClipsDescendants = true;
 
 				Fallens:_Animation(CloseWindow,TweenInfo.new(0.2),{
-					Size = UDim2.new(0, 45, 0, 23),
+					Size = UDim2.new(0, 45, 0, 45),
 					BackgroundTransparency = 0.025
 				})
 
@@ -9592,7 +9615,7 @@ function Fallens.new(Config : Window)
 				ImageLabel.ClipsDescendants = false;
 
 				Fallens:_Animation(CloseWindow,TweenInfo.new(0.2),{
-					Size = UDim2.new(0, 0, 0, 23),
+					Size = UDim2.new(0, 0, 0, 45),
 					BackgroundTransparency = 1
 				})
 
@@ -9832,8 +9855,12 @@ function Fallens.new(Config : Window)
 		end;
 
 		local Button = Fallens:_Input(CloseWindow,function()
+			if Fallens.IS_DRAG_MOVE then return end;
+
 			WindowArgs:_ToggleUI()
 		end)
+
+		Fallens:Drag(Button,CloseWindow,0.1);
 
 		if not Fallens:_IsMobile() then
 
