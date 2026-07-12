@@ -6563,19 +6563,24 @@ function Fallens.new(Config : Window)
 		Highlight.Name = Fallens:_RandomString()
 		Highlight.Parent = Userinfo
 		Highlight.AnchorPoint = Vector2.new(0.5, 0)
-		Highlight.BackgroundColor3 = Color3.fromRGB(161, 161, 161)
+		Highlight.BackgroundColor3 = Fallens.Colors.Highlight
 		Highlight.BackgroundTransparency = 1
 		Highlight.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		Highlight.BorderSizePixel = 0
 		Highlight.Position = UDim2.new(0.5, 0, 0, 4)
 		Highlight.Size = UDim2.new(1, -15, 1, -15)
 
+		table.insert(Fallens.Elements.Highlight,{
+			Element = Highlight,
+			Property = "BackgroundColor3"
+		});
+
 		UICorner.CornerRadius = UDim.new(0, 4)
 		UICorner.Parent = Highlight
 
 		Userinfo.MouseEnter:Connect(function()
 			Fallens:_Animation(Highlight,TweenInfo.new(0.2),{
-				BackgroundTransparency = 0.925
+				BackgroundTransparency = 0.85
 			});
 		end);
 
@@ -6851,12 +6856,21 @@ function Fallens.new(Config : Window)
 
 		Header.Name = Fallens:_RandomString()
 		Header.Parent = UserSettings
-		Header.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-		Header.BackgroundTransparency = 1.000
+		Header.BackgroundColor3 = Fallens.Colors.Highlight
+		Header.BackgroundTransparency = 0.88
 		Header.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		Header.BorderSizePixel = 0
 		Header.Size = UDim2.new(1, 0, 0, 45)
 		Header.ZIndex = 66
+
+		table.insert(Fallens.Elements.Highlight,{
+			Element = Header,
+			Property = "BackgroundColor3"
+		});
+
+		local HeaderCorner = Instance.new("UICorner")
+		HeaderCorner.CornerRadius = UDim.new(0, 4)
+		HeaderCorner.Parent = Header
 
 		HeaderText.Name = Fallens:_RandomString()
 		HeaderText.Parent = Header
@@ -9564,7 +9578,7 @@ function Fallens.new(Config : Window)
 
 		CloseWindow.Name = Fallens:_RandomString()
 		CloseWindow.Parent = FallensGui
-		CloseWindow.AnchorPoint = Vector2.new(1, 0)
+		CloseWindow.AnchorPoint = Vector2.new(0, 0.5)
 		CloseWindow.BackgroundColor3 = Fallens.Colors.BGDBColor
 
 		table.insert(Fallens.Elements.BGDBColor,{
@@ -9575,8 +9589,8 @@ function Fallens.new(Config : Window)
 		CloseWindow.BackgroundTransparency = 1
 		CloseWindow.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		CloseWindow.BorderSizePixel = 0
-		CloseWindow.Position = UDim2.new(1, -10, 0, 10)
-		CloseWindow.Size = UDim2.new(0, 0, 0, 52)
+		CloseWindow.Position = UDim2.new(0, 10, 0.5, 0)
+		CloseWindow.Size = UDim2.new(0, 0, 0, 40)
 		CloseWindow.ZIndex = 150
 		CloseWindow.ClipsDescendants = true;
 
@@ -9600,8 +9614,8 @@ function Fallens.new(Config : Window)
 		ImageLabel.BackgroundTransparency = 1.000
 		ImageLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		ImageLabel.BorderSizePixel = 0
-		ImageLabel.Position = UDim2.new(0, 16, 0.5, 0)
-		ImageLabel.Size = UDim2.new(0, 26, 0, 26)
+		ImageLabel.Position = UDim2.new(0, 12, 0.5, 0)
+		ImageLabel.Size = UDim2.new(0, 20, 0, 20)
 		ImageLabel.ZIndex = 151
 		ImageLabel.Image = Config.Logo
 		ImageLabel.ImageTransparency = 1
@@ -9613,13 +9627,13 @@ function Fallens.new(Config : Window)
 		TitleLabel.BackgroundTransparency = 1.000
 		TitleLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		TitleLabel.BorderSizePixel = 0
-		TitleLabel.Position = UDim2.new(0, 56, 0.5, -9)
-		TitleLabel.Size = UDim2.new(0, 220, 0, 18)
+		TitleLabel.Position = UDim2.new(0, 40, 0.5, -7)
+		TitleLabel.Size = UDim2.new(0, 200, 0, 14)
 		TitleLabel.ZIndex = 151
 		TitleLabel.Font = Enum.Font.GothamBold
 		TitleLabel.Text = Config.Name
 		TitleLabel.TextColor3 = Fallens.Colors.SwitchColor
-		TitleLabel.TextSize = 16.000
+		TitleLabel.TextSize = 12.000
 		TitleLabel.TextTransparency = 1
 		TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -9634,13 +9648,13 @@ function Fallens.new(Config : Window)
 		SubtitleLabel.BackgroundTransparency = 1.000
 		SubtitleLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		SubtitleLabel.BorderSizePixel = 0
-		SubtitleLabel.Position = UDim2.new(0, 56, 0.5, 10)
-		SubtitleLabel.Size = UDim2.new(0, 220, 0, 16)
+		SubtitleLabel.Position = UDim2.new(0, 40, 0.5, 8)
+		SubtitleLabel.Size = UDim2.new(0, 200, 0, 12)
 		SubtitleLabel.ZIndex = 151
 		SubtitleLabel.Font = Enum.Font.Gotham
 		SubtitleLabel.Text = "Tap to show"
 		SubtitleLabel.TextColor3 = Fallens.Colors.SwitchColor
-		SubtitleLabel.TextSize = 13.000
+		SubtitleLabel.TextSize = 10.000
 		SubtitleLabel.TextTransparency = 1
 		SubtitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -9656,12 +9670,12 @@ function Fallens.new(Config : Window)
 			if v then
 				local TitleSize = TextService:GetTextSize(TitleLabel.Text,TitleLabel.TextSize,TitleLabel.Font,Vector2.new(math.huge,math.huge));
 				local SubtitleSize = TextService:GetTextSize(SubtitleLabel.Text,SubtitleLabel.TextSize,SubtitleLabel.Font,Vector2.new(math.huge,math.huge));
-				local TargetWidth = 56 + math.max(TitleSize.X,SubtitleSize.X) + 18;
+				local TargetWidth = 40 + math.max(TitleSize.X,SubtitleSize.X) + 14;
 
 				ImageLabel.ClipsDescendants = true;
 
 				Fallens:_Animation(CloseWindow,TweenInfo.new(0.2),{
-					Size = UDim2.new(0, TargetWidth, 0, 52),
+					Size = UDim2.new(0, TargetWidth, 0, 40),
 					BackgroundTransparency = 0.025
 				})
 
@@ -9680,7 +9694,7 @@ function Fallens.new(Config : Window)
 				ImageLabel.ClipsDescendants = false;
 
 				Fallens:_Animation(CloseWindow,TweenInfo.new(0.2),{
-					Size = UDim2.new(0, 0, 0, 52),
+					Size = UDim2.new(0, 0, 0, 40),
 					BackgroundTransparency = 1
 				})
 
