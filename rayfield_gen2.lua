@@ -3483,20 +3483,22 @@ function RayfieldLibrary:CreateWindow(Settings)
 			roundFull(track)
 			track.Parent = card
 
-			local fill = create("Frame", {
-				Size = UDim2.new(0.5, 0, 1, 0),
-				BackgroundColor3 = Color3.fromRGB(255, 255,255),
-				Parent = track,
-			})
-			roundFull(fill)
+            local fill = create("Frame", {
+                Size = UDim2.new(0.5, 0, 1, 0),
+                BackgroundColor3 = Theme.Accent,
+                Parent = track,
+            })
+            roundFull(fill)
+            -- Daftarkan ke sistem paint agar bisa ikut berubah jika tema diubah saat runtime
+            paint(fill, "BackgroundColor3", "Accent")
 
-			create("UIGradient", {
-				Color = ColorSequence.new({
-					ColorSequenceKeypoint.new(0, Color3.fromRGB(42, 88, 66)),
-					ColorSequenceKeypoint.new(1, Color3.fromRGB(74, 178, 124)),
-				}),
-				Parent = fill,
-			})
+            create("UIGradient", {
+                Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, Theme.AccentDark),
+                    ColorSequenceKeypoint.new(1, Theme.Accent),
+                }),
+                Parent = fill,
+            })
 
 			local knob = create("Frame", {
 				AnchorPoint = Vector2.new(0.5, 0.5),
