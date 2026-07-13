@@ -1118,7 +1118,7 @@ local function getAutoScale()
 	local isMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled and not UserInputService.KeyboardEnabled
 
 	-- 900px tinggi dipakai sebagai referensi "layar penuh" (scale 1)
-	local scale = math.clamp(viewport.Y / 900, 0.62, 1)
+	local scale = math.clamp(viewport.Y / 900, 0.70, 1)
 
 	if isMobile then
 		scale = math.min(scale, 0.82)
