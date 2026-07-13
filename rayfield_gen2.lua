@@ -109,6 +109,7 @@ local Theme = {
 }
 
 local painted = {}
+local shimmerGradients = {}
 
 local function paint(inst, prop, key)
 	inst[prop] = Theme[key]
@@ -116,12 +117,42 @@ local function paint(inst, prop, key)
 end
 
 local function repaint()
-	for _, entry in ipairs(painted) do
-		local inst, prop,key = entry[1],entry[2], entry[3]
-		if inst and inst.Parent and Theme[key] then
-			pcall(function() inst[prop] = Theme[key] end)
-		end
-	end
+    for _, entry in ipairs(painted) do
+        local inst, prop,key = entry[1],entry[2], entry[3]
+        if inst and inst.Parent and Theme[key] then
+            pcall(function() inst[prop] = Theme[key] end)
+        end
+    end
+    for _, grad in ipairs(shimmerGradients) do
+        if grad and grad.Parent then
+            grad.Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0, Theme.Accent),
+                ColorSequenceKeypoint.new(0.4, Theme.Accent),
+                ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)),
+                ColorSequenceKeypoint.new(0.6, Theme.Accent),
+                ColorSequenceKeypoint.new(1, Theme.Accent),
+            })
+        end
+    end
+end
+
+local function applyShimmer(label)
+    local grad = create("UIGradient", {
+        Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Theme.Accent),
+            ColorSequenceKeypoint.new(0.4, Theme.Accent),
+            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)),
+            ColorSequenceKeypoint.new(0.6, Theme.Accent),
+            ColorSequenceKeypoint.new(1, Theme.Accent),
+        }),
+        Offset = Vector2.new(-1, 0),
+        Parent = label,
+    })
+    table.insert(shimmerGradients, grad)
+    
+    -- Animasikan gradient dari kiri ke kanan secara berulang
+    local t = TweenService:Create(grad, TweenInfo.new(3.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, false, 1.5), {Offset = Vector2.new(1, 0)})
+    t:Play()
 end
 
 local function create(class, props, children)
@@ -1416,18 +1447,19 @@ function RayfieldLibrary:CreateWindow(Settings)
 		Parent = titleRow,
 	})
 
-	local titleLabel = create("TextLabel", {
-		BackgroundTransparency = 1,
-		AutomaticSize = Enum.AutomaticSize.X,
-		Size = UDim2.new(0, 0, 1, 0),
-		Font = FONT_BOLD,
-		TextSize = 21,
-		TextXAlignment = Enum.TextXAlignment.Left,
-		Text=Settings.Name or "Rayfield",
-		LayoutOrder = 1,
-		Parent = titleRow,
-	})
-	paint(titleLabel, "TextColor3", "TextTitle")
+    local titleLabel = create("TextLabel", {
+        BackgroundTransparency = 1,
+        AutomaticSize = Enum.AutomaticSize.X,
+        Size = UDim2.new(0, 0, 1, 0),
+        Font = FONT_BOLD,
+        TextSize = 21,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Text=Settings.Name or "Rayfield",
+        LayoutOrder = 1,
+        Parent = titleRow,
+    })
+    paint(titleLabel, "TextColor3", "Accent")
+    applyShimmer(titleLabel)
 
 	if Settings.Badge then
 		local badgeText = type(Settings.Badge) == "table" and (Settings.Badge.Text or "") or tostring(Settings.Badge)
@@ -1465,18 +1497,19 @@ function RayfieldLibrary:CreateWindow(Settings)
 		paint(bt,"TextColor3", "BadgeText")
 	end
 
-	local subtitleLabel = create("TextLabel",{
-		BackgroundTransparency = 1,
-		AutomaticSize = Enum.AutomaticSize.X,
-		Position = UDim2.fromOffset(24, 42),
-		Size = UDim2.new(0,0,0, 15),
-		Font=FONT_MEDIUM,
-		TextSize = 13,
-		TextXAlignment = Enum.TextXAlignment.Left,
-		Text = Settings.Subtitle or "Rayfield Gen2",
-		Parent = header,
-	})
-	paint(subtitleLabel, "TextColor3", "TextSub")
+    local subtitleLabel = create("TextLabel",{
+        BackgroundTransparency = 1,
+        AutomaticSize = Enum.AutomaticSize.X,
+        Position = UDim2.fromOffset(24, 42),
+        Size = UDim2.new(0,0,0, 15),
+        Font=FONT_MEDIUM,
+        TextSize = 13,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Text = Settings.Subtitle or "Rayfield Gen2",
+        Parent = header,
+    })
+    paint(subtitleLabel, "TextColor3", "Accent")
+    applyShimmer(subtitleLabel)
 
 	local buttonRow = create("Frame", {
 		BackgroundTransparency = 1,
