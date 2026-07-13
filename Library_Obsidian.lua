@@ -2364,11 +2364,52 @@ function Fallens:_CreateBlock(Signal)
 	end;
 
 	GlobalBlock.Name = Fallens:_RandomString()
-	GlobalBlock.BackgroundTransparency = 1.000
+	GlobalBlock.BackgroundColor3 = Fallens.Colors.BlockColor
+	GlobalBlock.BackgroundTransparency = 0.000
 	GlobalBlock.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	GlobalBlock.BorderSizePixel = 0
-	GlobalBlock.Size = UDim2.new(1, -1, 0, 30)
+	GlobalBlock.Size = UDim2.new(1, -1, 0, 34)
 	GlobalBlock.ZIndex = 10
+
+	table.insert(Fallens.Elements.BlockColor , {
+		Element = GlobalBlock,
+		Property = 'BackgroundColor3'
+	});
+
+	local BlockCorner = Instance.new("UICorner")
+	BlockCorner.CornerRadius = UDim.new(0, 14)
+	BlockCorner.Parent = GlobalBlock
+
+	local BlockStroke = Instance.new("UIStroke")
+	BlockStroke.Color = Fallens.Colors.StrokeColor
+	BlockStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	BlockStroke.Thickness = 1
+	BlockStroke.Transparency = 0.4
+	BlockStroke.Parent = GlobalBlock
+
+	table.insert(Fallens.Elements.StrokeColor,{
+		Element = BlockStroke,
+		Property = "Color"
+	});
+
+	local BlockSheen = Instance.new("UIGradient")
+	BlockSheen.Name = Fallens:_RandomString()
+	BlockSheen.Parent = GlobalBlock
+	BlockSheen.Rotation = 90
+	BlockSheen.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(226, 226, 226)),
+	})
+
+	Fallens:_Hover(GlobalBlock,function()
+		Fallens:_Animation(GlobalBlock,TweenInfo.new(0.15),{
+			BackgroundColor3 = Fallens.Colors.MouseEnter
+		});
+	end , function()
+		Fallens:_Animation(GlobalBlock,TweenInfo.new(0.15),{
+			BackgroundColor3 = Fallens.Colors.BlockColor
+		});
+	end);
 
 	BlockText.Name = Fallens:_RandomString()
 	BlockText.Parent = GlobalBlock
@@ -7030,8 +7071,6 @@ function Fallens.new(Config : Window)
 
 		local Category = Instance.new("Frame")
 		local CategoryText = Instance.new("TextLabel")
-		local Frame = Instance.new("Frame")
-		local UIGradient = Instance.new("UIGradient")
 
 		Category.Name = Fallens:_RandomString()
 		Category.Parent = TabButtonScrollingFrame
@@ -7050,12 +7089,13 @@ function Fallens.new(Config : Window)
 		CategoryText.BackgroundTransparency = 1.000
 		CategoryText.BorderColor3 = Color3.fromRGB(0, 0, 0)
 		CategoryText.BorderSizePixel = 0
-		CategoryText.Position = UDim2.new(0, 5, 0, 8)
-		CategoryText.Size = UDim2.new(1, 200, 0, 10)
-		CategoryText.Font = Enum.Font.Gotham
+		CategoryText.AnchorPoint = Vector2.new(0, 1)
+		CategoryText.Position = UDim2.new(0, 5, 1, -3)
+		CategoryText.Size = UDim2.new(1, -15, 0, 14)
+		CategoryText.Font = Enum.Font.GothamMedium
 		CategoryText.Text = config.Name
 		CategoryText.TextColor3 = Fallens.Colors.SwitchColor
-		CategoryText.TextSize = 16.000
+		CategoryText.TextSize = 13.000
 		CategoryText.TextTransparency = 0.500
 		CategoryText.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -7064,23 +7104,6 @@ function Fallens.new(Config : Window)
 			Property = 'TextColor3'
 		});
 
-		Frame.Parent = Category
-		Frame.AnchorPoint = Vector2.new(0.5, 1)
-		Frame.BackgroundColor3 = Fallens.Colors.Highlight
-		Frame.BackgroundTransparency = 0.750
-		Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
-		Frame.BorderSizePixel = 0
-		Frame.Position = UDim2.new(0.5, 0, 1, 0)
-		Frame.Size = UDim2.new(1, 0, 0, 1)
-
-		table.insert(Fallens.Elements.Highlight,{
-			Element = Frame,
-			Property = "BackgroundColor3"
-		});
-
-		UIGradient.Transparency = NumberSequence.new{NumberSequenceKeypoint.new(0.00, 1.00), NumberSequenceKeypoint.new(0.05, 0.21), NumberSequenceKeypoint.new(0.50, 0.00), NumberSequenceKeypoint.new(0.96, 0.17), NumberSequenceKeypoint.new(1.00, 1.00)}
-		UIGradient.Parent = Frame
-
 		local Tween = TweenInfo.new(0.35,Enum.EasingStyle.Quint);
 
 		TabHover:Connect(function(bool)
@@ -7088,17 +7111,9 @@ function Fallens.new(Config : Window)
 				Fallens:_Animation(CategoryText,Tween,{
 					TextTransparency = 0.500
 				});
-
-				Fallens:_Animation(Frame,Tween,{
-					BackgroundTransparency = 0.750
-				});
 			else
 				Fallens:_Animation(CategoryText,Tween,{
 					TextTransparency = 1
-				});
-
-				Fallens:_Animation(Frame,Tween,{
-					BackgroundTransparency = 1
 				});
 			end;
 		end);
@@ -7188,8 +7203,29 @@ function Fallens.new(Config : Window)
 		Highlight.Size = UDim2.new(1, -17, 1, 0)
 		Highlight.ZIndex = 2
 
-		UICorner.CornerRadius = UDim.new(0, 6)
+		UICorner.CornerRadius = UDim.new(1, 0)
 		UICorner.Parent = Highlight
+		
+		local HighlightSheen = Instance.new("UIGradient")
+		HighlightSheen.Name = Fallens:_RandomString()
+		HighlightSheen.Parent = Highlight
+		HighlightSheen.Rotation = 90
+		HighlightSheen.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 200, 200)),
+		})
+		
+		local HighlightStroke = Instance.new("UIStroke")
+		HighlightStroke.Color = Fallens.Colors.StrokeColor
+		HighlightStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		HighlightStroke.Thickness = 1
+		HighlightStroke.Transparency = 0.62
+		HighlightStroke.Parent = Highlight
+		
+		table.insert(Fallens.Elements.StrokeColor,{
+			Element = HighlightStroke,
+			Property = "Color"
+		});
 
 		-- Creating Container --
 
@@ -7687,8 +7723,29 @@ function Fallens.new(Config : Window)
 			Property = "BackgroundColor3"
 		});
 
-		UICorner.CornerRadius = UDim.new(0, 6)
+		UICorner.CornerRadius = UDim.new(1, 0)
 		UICorner.Parent = Highlight
+		
+		local HighlightSheen = Instance.new("UIGradient")
+		HighlightSheen.Name = Fallens:_RandomString()
+		HighlightSheen.Parent = Highlight
+		HighlightSheen.Rotation = 90
+		HighlightSheen.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 200, 200)),
+		})
+		
+		local HighlightStroke = Instance.new("UIStroke")
+		HighlightStroke.Color = Fallens.Colors.StrokeColor
+		HighlightStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		HighlightStroke.Thickness = 1
+		HighlightStroke.Transparency = 0.62
+		HighlightStroke.Parent = Highlight
+		
+		table.insert(Fallens.Elements.StrokeColor,{
+			Element = HighlightStroke,
+			Property = "Color"
+		});
 
 		local TabConfig = Instance.new("Frame")
 		local ConfigList = Instance.new("Frame")
@@ -9007,8 +9064,29 @@ function Fallens.new(Config : Window)
 				Property = "BackgroundColor3"
 			});
 
-			UICorner.CornerRadius = UDim.new(0, 6)
+			UICorner.CornerRadius = UDim.new(1, 0)
 			UICorner.Parent = Highlight
+			
+			local HighlightSheen = Instance.new("UIGradient")
+			HighlightSheen.Name = Fallens:_RandomString()
+			HighlightSheen.Parent = Highlight
+			HighlightSheen.Rotation = 90
+			HighlightSheen.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+				ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 200, 200)),
+			})
+			
+			local HighlightStroke = Instance.new("UIStroke")
+			HighlightStroke.Color = Fallens.Colors.StrokeColor
+			HighlightStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+			HighlightStroke.Thickness = 1
+			HighlightStroke.Transparency = 0.62
+			HighlightStroke.Parent = Highlight
+			
+			table.insert(Fallens.Elements.StrokeColor,{
+				Element = HighlightStroke,
+				Property = "Color"
+			});
 
 			local TabContent = Instance.new("Frame")
 			local Left = Instance.new("ScrollingFrame")
