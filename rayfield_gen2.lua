@@ -97,9 +97,9 @@ local Theme = {
 	TextBody = rgb(233, 233, 233),
 	TextSub = rgb(152, 152, 152),
 	TextMuted = rgb(110,110, 110),
-	AccentDark = rgb(54, 104, 80),
-	Accent = rgb(70, 168, 120),
-	AccentSoft = rgb(104, 210,156),
+	AccentDark = rgb(0, 51, 102),
+	Accent = rgb(0, 128, 255),
+	AccentSoft = rgb(153, 204,255),
 	Knob = rgb(255, 255, 255),
 	KnobOff = rgb(66, 68, 70),
 	ToggleTrack = rgb(18, 18, 18),
@@ -1618,6 +1618,11 @@ function RayfieldLibrary:CreateWindow(Settings)
 	local morphing = false
 	local storedPosition = nil
 	local unlockCursor = false
+	-- Posisi tombol "open menu" (pill) saat window disembunyikan. Disimpan di
+	-- variabel terpisah (bukan hardcode) supaya kalau pill digeser-geser oleh
+	-- user, posisi itu tetap "nempel" setiap kali menu ditutup lagi, bukan
+	-- balik ke posisi default terus-terusan. Default-nya sekarang di kiri-tengah.
+	local pillPosition = nil
 
 	connect(RunService.RenderStepped,function()
 		if unlockCursor and not hidden and not destroyed then
@@ -4702,6 +4707,18 @@ function RayfieldLibrary:CreateWindow(Settings)
 				unlockCursor=value
 			end,
 		})
+		SettingsTab:CreateSlider({
+			Name = "UI Scale",
+			Icon = "maximize",
+			Range = {50, 150},
+			Increment = 5,
+			Suffix = "%",
+			CurrentValue = math.floor(uiScale.Scale * 100 + 0.5),
+			Description = "Mengubah ukuran seluruh window (zoom in/out).",
+			Callback = function(value)
+				Window:SetUIScale(value / 100)
+			end,
+		})
 		SettingsTab:CreateSection("Configuration")
 		SettingsTab:CreateLabel(configEnabled and ("Saving to " .. configFolder .. "/" .. configFile .. ".json") or "Configuration saving is off", "folder")
 		SettingsTab:CreateSection("About")
@@ -4793,7 +4810,11 @@ function RayfieldLibrary:CreateWindow(Settings)
 		tween(window, TI_MORPH, {BackgroundColor3 = Color3.fromRGB(46,46, 46)})
 		tween(windowStroke, TI_MORPH, {Transparency = 0.45});
 		tween(shadow, TI_MORPH, {ImageTransparency = 0.55})
-		tween(root, TI_MORPH, {Position = UDim2.new(0.5, 0, 0, 16)})
+		if not pillPosition then
+			-- Default posisi pill: pojok kiri, tengah secara vertikal.
+			pillPosition = UDim2.new(0, 20 + PILL_W / 2, 0.5, -PILL_H / 2)
+		end
+		tween(root, TI_MORPH, {Position = pillPosition})
 		task.wait(0.34)
 		pillContent.Visible = true
 		pillButton.Visible = true
@@ -4862,6 +4883,9 @@ function RayfieldLibrary:CreateWindow(Settings)
 					pillStartPos.X.Scale, pillStartPos.X.Offset + delta.X,
 					pillStartPos.Y.Scale, pillStartPos.Y.Offset + delta.Y
 				)
+				-- Simpan posisi terbaru supaya kalau menu dibuka lalu ditutup
+				-- lagi, pill tetap di tempat terakhir digeser (tidak reset).
+				pillPosition = root.Position
 			end
 		end)
 
