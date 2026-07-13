@@ -3494,7 +3494,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 
             create("UIGradient", {
                 Color = ColorSequence.new({
-                    ColorSequenceKeypoint.new(0, Theme.AccentDark),
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(42, 88, 66)),
                     ColorSequenceKeypoint.new(1, Theme.Accent),
                 }),
                 Parent = fill,
