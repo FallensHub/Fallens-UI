@@ -86,7 +86,7 @@ end
 local rgb = Color3.fromRGB
 
 local Theme = {
-	Background = rgb(20, 20, 20),
+	Background = rgb(0, 0, 0),
 	Card = rgb(31,31, 31),
 	CardHover = rgb(39, 39,39),
 	CardSelected = rgb(48, 48,48),
@@ -4188,6 +4188,9 @@ function RayfieldLibrary:CreateWindow(Settings)
 			-- lebih tinggi dan nama pindah ke baris atas.
 			local HEADER_H = compact and 78 or 50
 			local COLLAPSED_H = HEADER_H
+			-- Y-center swatch saat collapsed: mode kolom taruh di baris bawah (di bawah
+			-- nama), bukan sebaris dengan nama, supaya tidak menumpuk dengan teks.
+			local COLLAPSED_CY = compact and 55 or 25
 			local SV_W, SV_H, HUE_H = 180, compact and 90 or 110, 14
 			local SV_CY, HUE_CY, PREVIEW_CY, HEX_CY, RGB_CY, PRESET_CY, EXPANDED_H
 			if compact then
@@ -4251,7 +4254,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 
 			local sv = create("Frame", {
 				AnchorPoint = compact and Vector2.new(0, 0.5) or Vector2.new(1, 0.5),
-				Position = compact and UDim2.new(0, 16, 0, 22) or UDim2.new(1, -16, 0, 25),
+				Position = compact and UDim2.new(0, 16, 0, COLLAPSED_CY) or UDim2.new(1, -16, 0, COLLAPSED_CY),
 				Size = UDim2.fromOffset(42, 26),
 				BackgroundColor3 = Color3.fromHSV(h, 1, 1),
 				Parent = card,
@@ -4315,7 +4318,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 
 			local hueBar = create("Frame", {
 				AnchorPoint = compact and Vector2.new(0, 0.5) or Vector2.new(1, 0.5),
-				Position = compact and UDim2.new(0, 16, 0, 22) or UDim2.new(1, -16, 0, 25),
+				Position = compact and UDim2.new(0, 16, 0, COLLAPSED_CY) or UDim2.new(1, -16, 0, COLLAPSED_CY),
 				Size = UDim2.fromOffset(0, 0),
 				BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 				BackgroundTransparency = 1,
@@ -4552,11 +4555,11 @@ function RayfieldLibrary:CreateWindow(Settings)
 					tween(card, EXPO, {Size = UDim2.new(1, 0, 0, COLLAPSED_H)})
 					tween(clicker, EXPO, {Size = UDim2.fromScale(1, 1)})
 					if compact then
-						tween(sv, EXPO, {Position = UDim2.new(0, 16, 0, 22), Size = UDim2.fromOffset(42, 26)})
-						tween(hueBar, EXPO, {Position = UDim2.new(0, 16, 0, 22), Size = UDim2.fromOffset(0, 0), BackgroundTransparency = 1})
+						tween(sv, EXPO, {Position = UDim2.new(0, 16, 0, COLLAPSED_CY), Size = UDim2.fromOffset(42, 26)})
+						tween(hueBar, EXPO, {Position = UDim2.new(0, 16, 0, COLLAPSED_CY), Size = UDim2.fromOffset(0, 0), BackgroundTransparency = 1})
 					else
-						tween(sv, EXPO, {Position = UDim2.new(1, -16, 0, 25), Size = UDim2.fromOffset(42, 26)})
-						tween(hueBar, EXPO, {Position = UDim2.new(1, -16, 0, 25), Size = UDim2.fromOffset(0, 0), BackgroundTransparency = 1})
+						tween(sv, EXPO, {Position = UDim2.new(1, -16, 0, COLLAPSED_CY), Size = UDim2.fromOffset(42, 26)})
+						tween(hueBar, EXPO, {Position = UDim2.new(1, -16, 0, COLLAPSED_CY), Size = UDim2.fromOffset(0, 0), BackgroundTransparency = 1})
 					end
 					tween(display, EXPO, {BackgroundTransparency = 0})
 					svPoint.Visible = false
