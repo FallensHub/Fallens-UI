@@ -3598,16 +3598,61 @@ function RayfieldLibrary:CreateWindow(Settings)
 
 		function Tab:CreateInput(InputSettings)
 			InputSettings = InputSettings or {}
-			local card = makeCard(page,InputSettings.Name,InputSettings.Icon, 50)
+			local card
+
+			if compact then
+				-- Mode kolom/baris: kotak input diletakkan di bawah nama (full width)
+				-- alih-alih menempel fixed-width di kanan, agar tidak overlap saat sempit.
+				card = create("Frame", {
+					Size = UDim2.new(1, 0, 0, 78),
+					LayoutOrder = nextOrder(),
+					Parent = page,
+				})
+				card:SetAttribute("SearchName", InputSettings.Name or "")
+				paint(card, "BackgroundColor3", "Card")
+				cardBase(card)
+
+				local textX = 17
+				if InputSettings.Icon then
+					local ic = makeIcon(card, InputSettings.Icon, 18, Theme.TextTitle, 0.04)
+					if ic then
+						ic.Position = UDim2.fromOffset(16, 13)
+						textX = 44
+					end
+				end
+				local nameLabel = create("TextLabel", {
+					BackgroundTransparency = 1,
+					Position = UDim2.fromOffset(textX, 13),
+					Size = UDim2.new(1, -textX - 16, 0, 18),
+					Font = FONT_MEDIUM,
+					TextSize = 16,
+					TextXAlignment = Enum.TextXAlignment.Left,
+					TextTruncate = Enum.TextTruncate.AtEnd,
+					Text = InputSettings.Name or "",
+					Parent = card,
+				})
+				paint(nameLabel, "TextColor3", "TextBody")
+			else
+				card = makeCard(page,InputSettings.Name,InputSettings.Icon, 50)
+			end
 			descFor(card, InputSettings.Description)
 			hoverable(card)
 
-			local boxHolder = create("Frame", {
-				AnchorPoint = Vector2.new(1, 0.5),
-				Position = UDim2.new(1,-13, 0.5, 0),
-				Size = UDim2.fromOffset(172, 32),
-				Parent = card,
-			})
+			local boxHolder
+			if compact then
+				boxHolder = create("Frame", {
+					Position = UDim2.fromOffset(15, 42),
+					Size = UDim2.new(1, -30, 0, 32),
+					Parent = card,
+				})
+			else
+				boxHolder = create("Frame", {
+					AnchorPoint = Vector2.new(1, 0.5),
+					Position = UDim2.new(1,-13, 0.5, 0),
+					Size = UDim2.fromOffset(172, 32),
+					Parent = card,
+				})
+			end
 			paint(boxHolder, "BackgroundColor3", "CardHover")
 			round(boxHolder, 10)
 			local boxStroke = create("UIStroke", {Color = Color3.fromRGB(255, 255, 255), Transparency = 0.88, Parent = boxHolder})
@@ -3672,17 +3717,21 @@ function RayfieldLibrary:CreateWindow(Settings)
 				current = {current[1]}
 			end
 
+			-- Mode kolom/baris: header dibuat lebih tinggi, nama di baris atas dan
+			-- current-value + chevron di baris bawah (full width) agar tidak overlap.
+			local HEADER_H = compact and 78 or 50
+
 			local wrapper = create("Frame", {
 				BackgroundTransparency = 1,
 				AutomaticSize = Enum.AutomaticSize.Y,
-				Size = UDim2.new(1,0, 0, 50),
+				Size = UDim2.new(1,0, 0, HEADER_H),
 				LayoutOrder = nextOrder(),
 				Parent = page,
 			})
 			wrapper:SetAttribute("SearchName", DropdownSettings.Name or "")
 
 			local card = create("Frame",{
-				Size = UDim2.new(1,0, 0, 50),
+				Size = UDim2.new(1,0, 0, HEADER_H),
 				Parent = wrapper,
 			})
 			paint(card, "BackgroundColor3", "Card");
@@ -3694,15 +3743,15 @@ function RayfieldLibrary:CreateWindow(Settings)
 				local ic = makeIcon(card,DropdownSettings.Icon, 18,Theme.TextTitle, 0.04)
 				if ic then
 					ic.AnchorPoint = Vector2.new(0, 0.5)
-					ic.Position = UDim2.new(0, 16,0.5, 0)
+					ic.Position = compact and UDim2.new(0, 16, 0, 22) or UDim2.new(0, 16,0.5, 0)
 					textX = 44
 				end
 			end
 			local label = create("TextLabel", {
 				BackgroundTransparency = 1,
-				AnchorPoint = Vector2.new(0, 0.5),
-				Position=UDim2.new(0,textX, 0.5, 0),
-				Size = UDim2.new(0.5, -textX, 0,18),
+				AnchorPoint = compact and Vector2.new(0, 0) or Vector2.new(0, 0.5),
+				Position = compact and UDim2.new(0, textX, 0, 13) or UDim2.new(0,textX, 0.5, 0),
+				Size = compact and UDim2.new(1, -textX - 16, 0, 18) or UDim2.new(0.5, -textX, 0,18),
 				Font = FONT_MEDIUM,
 				TextSize=16,
 				TextXAlignment = Enum.TextXAlignment.Left,
@@ -3715,7 +3764,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 			local chevron = create("ImageLabel", {
 				BackgroundTransparency = 1,
 				AnchorPoint = Vector2.new(1,0.5),
-				Position = UDim2.new(1, -15, 0.5, 0),
+				Position = compact and UDim2.new(1, -15, 0, 46) or UDim2.new(1, -15, 0.5, 0),
 				Size = UDim2.fromOffset(16, 16),
 				ImageColor3 = Theme.TextSub,
 				Parent = card,
@@ -3724,12 +3773,12 @@ function RayfieldLibrary:CreateWindow(Settings)
 
 			local currentLabel = create("TextLabel", {
 				BackgroundTransparency = 1,
-				AnchorPoint=Vector2.new(1, 0.5),
-				Position=UDim2.new(1, -39, 0.5, 0),
-				Size = UDim2.new(0.4, -39, 0, 16),
+				AnchorPoint = compact and Vector2.new(0, 0.5) or Vector2.new(1, 0.5),
+				Position = compact and UDim2.new(0, 15, 0, 46) or UDim2.new(1, -39, 0.5, 0),
+				Size = compact and UDim2.new(1, -46, 0, 16) or UDim2.new(0.4, -39, 0, 16),
 				Font=FONT_MEDIUM,
 				TextSize=14,
-				TextXAlignment = Enum.TextXAlignment.Right,
+				TextXAlignment = compact and Enum.TextXAlignment.Left or Enum.TextXAlignment.Right,
 				TextTruncate = Enum.TextTruncate.AtEnd,
 				Text = "",
 				Parent = card,
@@ -3743,7 +3792,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 
 			local listHolder = create("ScrollingFrame", {
 				BackgroundTransparency = 1,
-				Position = UDim2.fromOffset(0, 56),
+				Position = UDim2.fromOffset(0, HEADER_H + 6),
 				Size = UDim2.new(1,0, 0, 0),
 				CanvasSize=UDim2.new(0, 0, 0,0),
 				AutomaticCanvasSize = Enum.AutomaticSize.Y,
@@ -3995,13 +4044,49 @@ function RayfieldLibrary:CreateWindow(Settings)
 
 		function Tab:CreateKeybind(KeybindSettings)
 			KeybindSettings = KeybindSettings or {}
-			local card = makeCard(page, KeybindSettings.Name, KeybindSettings.Icon, 50)
+			local card
+
+			if compact then
+				-- Mode kolom/baris: chip keybind diletakkan di bawah nama, bukan
+				-- menempel di kanan, agar tidak tertutup label saat kolom sempit.
+				card = create("Frame", {
+					Size = UDim2.new(1, 0, 0, 78),
+					LayoutOrder = nextOrder(),
+					Parent = page,
+				})
+				card:SetAttribute("SearchName", KeybindSettings.Name or "")
+				paint(card, "BackgroundColor3", "Card")
+				cardBase(card)
+
+				local textX = 17
+				if KeybindSettings.Icon then
+					local ic = makeIcon(card, KeybindSettings.Icon, 18, Theme.TextTitle, 0.04)
+					if ic then
+						ic.Position = UDim2.fromOffset(16, 13)
+						textX = 44
+					end
+				end
+				local nameLabel = create("TextLabel", {
+					BackgroundTransparency = 1,
+					Position = UDim2.fromOffset(textX, 13),
+					Size = UDim2.new(1, -textX - 16, 0, 18),
+					Font = FONT_MEDIUM,
+					TextSize = 16,
+					TextXAlignment = Enum.TextXAlignment.Left,
+					TextTruncate = Enum.TextTruncate.AtEnd,
+					Text = KeybindSettings.Name or "",
+					Parent = card,
+				})
+				paint(nameLabel, "TextColor3", "TextBody")
+			else
+				card = makeCard(page, KeybindSettings.Name, KeybindSettings.Icon, 50)
+			end
 			descFor(card, KeybindSettings.Description)
 			hoverable(card)
 
 			local keyHolder = create("Frame", {
-				AnchorPoint = Vector2.new(1, 0.5),
-				Position = UDim2.new(1,-13, 0.5, 0),
+				AnchorPoint = compact and Vector2.new(0, 0) or Vector2.new(1, 0.5),
+				Position = compact and UDim2.fromOffset(15, 42) or UDim2.new(1,-13, 0.5, 0),
 				AutomaticSize = Enum.AutomaticSize.X,
 				Size = UDim2.fromOffset(34, 30),
 			})
@@ -4097,10 +4182,27 @@ function RayfieldLibrary:CreateWindow(Settings)
 			ColorPickerSettings=ColorPickerSettings or {}
 			local color = ColorPickerSettings.Color or Color3.fromRGB(255, 255, 255)
 
-			local COLLAPSED_H = 50
-			local EXPANDED_H = 210
-			local SV_W, SV_H, SV_CY = 180, 110, 116
-			local HUE_CY = 188
+			-- Mode kolom/baris: panel expanded disusun 1 kolom (SV square, hue bar,
+			-- preview, hex, RGB, presets ditumpuk vertikal) dengan lebar relatif (scale)
+			-- alih-alih fixed-pixel, supaya pas di kolom sempit. Header juga dibuat
+			-- lebih tinggi dan nama pindah ke baris atas.
+			local HEADER_H = compact and 78 or 50
+			local COLLAPSED_H = HEADER_H
+			local SV_W, SV_H, HUE_H = 180, compact and 90 or 110, 14
+			local SV_CY, HUE_CY, PREVIEW_CY, HEX_CY, RGB_CY, PRESET_CY, EXPANDED_H
+			if compact then
+				SV_CY = HEADER_H + 8 + SV_H / 2
+				HUE_CY = SV_CY + SV_H / 2 + 8 + HUE_H / 2
+				PREVIEW_CY = HUE_CY + HUE_H / 2 + 10 + 16
+				HEX_CY = PREVIEW_CY + 16 + 8 + 15
+				RGB_CY = HEX_CY + 15 + 8 + 15
+				PRESET_CY = RGB_CY + 15 + 10 + 9
+				EXPANDED_H = PRESET_CY + 9 + 16
+			else
+				SV_CY, HUE_CY = 116, 188
+				HEX_CY, RGB_CY, PREVIEW_CY, PRESET_CY = 70, 112, 155, 188
+				EXPANDED_H = 210
+			end
 			local EXPO = TweenInfo.new(0.6, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out)
 			local EXPO_FAST = TweenInfo.new(0.45, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out)
 
@@ -4120,15 +4222,15 @@ function RayfieldLibrary:CreateWindow(Settings)
 				local ic = makeIcon(card, ColorPickerSettings.Icon, 18, Theme.TextTitle, 0.04)
 				if ic then
 					ic.AnchorPoint = Vector2.new(0, 0.5)
-					ic.Position = UDim2.new(0, 16, 0, 25)
+					ic.Position = compact and UDim2.new(0, 16, 0, 22) or UDim2.new(0, 16, 0, 25)
 					textX = 44
 				end
 			end
 			local label = create("TextLabel",{
 				BackgroundTransparency = 1,
-				AnchorPoint = Vector2.new(0, 0.5),
-				Position = UDim2.new(0, textX, 0, 25),
-				Size = UDim2.new(0.5, -textX, 0, 18),
+				AnchorPoint = compact and Vector2.new(0, 0) or Vector2.new(0, 0.5),
+				Position = compact and UDim2.new(0, textX, 0, 13) or UDim2.new(0, textX, 0, 25),
+				Size = compact and UDim2.new(1, -textX - 16, 0, 18) or UDim2.new(0.5, -textX, 0, 18),
 				Font=FONT_MEDIUM,
 				TextSize = 16,
 				TextXAlignment = Enum.TextXAlignment.Left,
@@ -4148,8 +4250,8 @@ function RayfieldLibrary:CreateWindow(Settings)
 			local push, refresh
 
 			local sv = create("Frame", {
-				AnchorPoint = Vector2.new(1, 0.5),
-				Position = UDim2.new(1, -16, 0, 25),
+				AnchorPoint = compact and Vector2.new(0, 0.5) or Vector2.new(1, 0.5),
+				Position = compact and UDim2.new(0, 16, 0, 22) or UDim2.new(1, -16, 0, 25),
 				Size = UDim2.fromOffset(42, 26),
 				BackgroundColor3 = Color3.fromHSV(h, 1, 1),
 				Parent = card,
@@ -4212,8 +4314,8 @@ function RayfieldLibrary:CreateWindow(Settings)
 			})
 
 			local hueBar = create("Frame", {
-				AnchorPoint = Vector2.new(1, 0.5),
-				Position = UDim2.new(1, -16, 0, 25),
+				AnchorPoint = compact and Vector2.new(0, 0.5) or Vector2.new(1, 0.5),
+				Position = compact and UDim2.new(0, 16, 0, 22) or UDim2.new(1, -16, 0, 25),
 				Size = UDim2.fromOffset(0, 0),
 				BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 				BackgroundTransparency = 1,
@@ -4255,15 +4357,17 @@ function RayfieldLibrary:CreateWindow(Settings)
 				inst[prop] = 1
 			end
 			local sliders = {}
-			local function addSlide(inst, x, openY, closedY)
-				table.insert(sliders, {inst = inst, x = x, openY = openY, closedY = closedY})
-				inst.Position = UDim2.new(0, x, 0, closedY)
+			-- xScale/xOffset membentuk komponen X dari UDim2, agar elemen bisa
+			-- diposisikan relatif (scale) untuk mode kolom, bukan cuma fixed-pixel.
+			local function addSlide(inst, xScale, xOffset, openY, closedY)
+				table.insert(sliders, {inst = inst, xScale = xScale, xOffset = xOffset, openY = openY, closedY = closedY})
+				inst.Position = UDim2.new(xScale, xOffset, 0, closedY)
 			end
 
-			local function makeField(letter, boxX, y, boxW, initial)
+			local function makeField(letter, xScale, xOffset, wScale, wOffset, y, initial)
 				local box = create("Frame", {
 					AnchorPoint = Vector2.new(0, 0.5),
-					Size = UDim2.fromOffset(boxW, 30),
+					Size = UDim2.new(wScale, wOffset, 0, 30),
 					BackgroundTransparency = 1,
 					Parent = card,
 				})
@@ -4303,7 +4407,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 				addReveal(box, "BackgroundTransparency", 0)
 				addReveal(st, "Transparency", 0.85)
 				addReveal(tb, "TextTransparency", 0)
-				addSlide(box, boxX, y, y + 16)
+				addSlide(box, xScale, xOffset, y, y + 16)
 				tb.Focused:Connect(function()
 					tween(st, TI_FAST, {Color = Theme.Accent, Transparency = 0.25})
 				end)
@@ -4313,14 +4417,24 @@ function RayfieldLibrary:CreateWindow(Settings)
 				return tb
 			end
 
-			local hexTb = makeField(nil, 16, 70, 168, "#FFFFFF")
-			local rTb = makeField("R", 16, 112, 52, "255")
-			local gTb = makeField("G", 74, 112, 52, "255")
-			local bTb = makeField("B", 132, 112, 52, "255")
+			local hexTb, rTb, gTb, bTb
+			if compact then
+				-- 1 kolom penuh: hex full-width, R/G/B dibagi 3 sama rata (scale-relative)
+				-- supaya menyesuaikan lebar kolom, bukan fixed-pixel seperti mode biasa.
+				hexTb = makeField(nil, 0, 16, 1, -32, HEX_CY, "#FFFFFF")
+				rTb = makeField("R", 0, 16, 1/3, -16, RGB_CY, "255")
+				gTb = makeField("G", 1/3, 8, 1/3, -16, RGB_CY, "255")
+				bTb = makeField("B", 2/3, 0, 1/3, -16, RGB_CY, "255")
+			else
+				hexTb = makeField(nil, 0, 16, 0, 168, HEX_CY, "#FFFFFF")
+				rTb = makeField("R", 0, 16, 0, 52, RGB_CY, "255")
+				gTb = makeField("G", 0, 74, 0, 52, RGB_CY, "255")
+				bTb = makeField("B", 0, 132, 0, 52, RGB_CY, "255")
+			end
 
 			local preview = create("Frame", {
 				AnchorPoint = Vector2.new(0, 0.5),
-				Size = UDim2.fromOffset(168, 32),
+				Size = compact and UDim2.new(1, -32, 0, 32) or UDim2.fromOffset(168, 32),
 				BackgroundColor3 = color,
 				BackgroundTransparency = 1,
 				Parent = card,
@@ -4329,7 +4443,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 			local previewStroke = create("UIStroke", {Color = Theme.Stroke, Transparency = 1, Parent = preview})
 			addReveal(preview, "BackgroundTransparency", 0)
 			addReveal(previewStroke, "Transparency", 0.85)
-			addSlide(preview, 16, 155, 171)
+			addSlide(preview, 0, 16, PREVIEW_CY, PREVIEW_CY + 16)
 
 			local presetColors = {
 				Color3.fromRGB(255, 255, 255),
@@ -4340,6 +4454,9 @@ function RayfieldLibrary:CreateWindow(Settings)
 				Color3.fromRGB(10, 132, 255),
 				Color3.fromRGB(191, 90, 242),
 			}
+			-- Kolom sempit: dot preset dirapatkan sedikit; sisa yang tidak muat akan
+			-- ter-clip rapi oleh ClipsDescendants pada card, bukan menumpuk keluar kolom.
+			local DOT_STEP = compact and 21 or 25
 			for idx, presetColor in ipairs(presetColors) do
 				local dot = create("TextButton", {
 					Text = "",
@@ -4353,7 +4470,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 				local dotStroke = create("UIStroke", {Color = Theme.Stroke, Transparency = 1, Parent = dot})
 				addReveal(dot, "BackgroundTransparency", 0)
 				addReveal(dotStroke, "Transparency", 0.8)
-				addSlide(dot, 25 + (idx - 1) * 25, 188, 204)
+				addSlide(dot, 0, DOT_STEP + (idx - 1) * DOT_STEP, PRESET_CY, PRESET_CY + 16)
 				dot.MouseEnter:Connect(function()
 					if open then tween(dot, TI_FAST, {Size = UDim2.fromOffset(22, 22)}) end
 				end)
@@ -4414,25 +4531,38 @@ function RayfieldLibrary:CreateWindow(Settings)
 					tween(sv, EXPO_FAST, {Size = UDim2.fromOffset(18, 15)})
 					task.delay(0.09, function()
 						if open then
-							tween(sv, EXPO, {Position = UDim2.new(1, -16, 0, SV_CY), Size = UDim2.fromOffset(SV_W, SV_H)})
+							if compact then
+								tween(sv, EXPO, {Position = UDim2.new(0, 16, 0, SV_CY), Size = UDim2.new(1, -32, 0, SV_H)})
+							else
+								tween(sv, EXPO, {Position = UDim2.new(1, -16, 0, SV_CY), Size = UDim2.fromOffset(SV_W, SV_H)})
+							end
 						end
 					end)
 					tween(display, EXPO, {BackgroundTransparency = 1})
 					svPoint.Visible = true
 					huePoint.Visible = true
-					tween(hueBar, EXPO, {Position = UDim2.new(1, -16, 0, HUE_CY), Size = UDim2.fromOffset(SV_W, 14), BackgroundTransparency = 0})
+					if compact then
+						tween(hueBar, EXPO, {Position = UDim2.new(0, 16, 0, HUE_CY), Size = UDim2.new(1, -32, 0, 14), BackgroundTransparency = 0})
+					else
+						tween(hueBar, EXPO, {Position = UDim2.new(1, -16, 0, HUE_CY), Size = UDim2.fromOffset(SV_W, 14), BackgroundTransparency = 0})
+					end
 					for _, r in ipairs(revealers) do tween(r.inst, EXPO, {[r.prop] = r.shown}) end
-					for _, sl in ipairs(sliders) do tween(sl.inst, EXPO, {Position = UDim2.new(0, sl.x, 0, sl.openY)}) end
+					for _, sl in ipairs(sliders) do tween(sl.inst, EXPO, {Position = UDim2.new(sl.xScale, sl.xOffset, 0, sl.openY)}) end
 				else
 					tween(card, EXPO, {Size = UDim2.new(1, 0, 0, COLLAPSED_H)})
 					tween(clicker, EXPO, {Size = UDim2.fromScale(1, 1)})
-					tween(sv, EXPO, {Position = UDim2.new(1, -16, 0, 25), Size = UDim2.fromOffset(42, 26)})
+					if compact then
+						tween(sv, EXPO, {Position = UDim2.new(0, 16, 0, 22), Size = UDim2.fromOffset(42, 26)})
+						tween(hueBar, EXPO, {Position = UDim2.new(0, 16, 0, 22), Size = UDim2.fromOffset(0, 0), BackgroundTransparency = 1})
+					else
+						tween(sv, EXPO, {Position = UDim2.new(1, -16, 0, 25), Size = UDim2.fromOffset(42, 26)})
+						tween(hueBar, EXPO, {Position = UDim2.new(1, -16, 0, 25), Size = UDim2.fromOffset(0, 0), BackgroundTransparency = 1})
+					end
 					tween(display, EXPO, {BackgroundTransparency = 0})
 					svPoint.Visible = false
 					huePoint.Visible = false
-					tween(hueBar, EXPO, {Position = UDim2.new(1, -16, 0, 25), Size = UDim2.fromOffset(0, 0), BackgroundTransparency = 1})
 					for _, r in ipairs(revealers) do tween(r.inst, EXPO, {[r.prop] = 1}) end
-					for _, sl in ipairs(sliders) do tween(sl.inst, EXPO, {Position = UDim2.new(0, sl.x, 0, sl.closedY)}) end
+					for _, sl in ipairs(sliders) do tween(sl.inst, EXPO, {Position = UDim2.new(sl.xScale, sl.xOffset, 0, sl.closedY)}) end
 				end
 			end
 			clicker.MouseButton1Click:Connect(function()
