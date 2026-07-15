@@ -1249,6 +1249,23 @@ function RayfieldLibrary:CreateWindow(Settings)
 	end
 	if configEnabled then mkfolder(configFolder) end
 
+	local function buildConfigOutput()
+		local out = {}
+		for flag, element in pairs(RayfieldLibrary.Flags) do
+			if element.Type == "Toggle" or element.Type == "Slider" or element.Type == "Input" then
+				out[flag] = element.CurrentValue
+			elseif element.Type == "Dropdown" then
+				out[flag] = element.CurrentOption
+			elseif element.Type == "Keybind" then
+				out[flag] = element.CurrentKeybind
+			elseif element.Type == "ColorPicker" then
+				local c = element.Color
+				out[flag] = {R = math.floor(c.R * 255 + 0.5), G = math.floor(c.G * 255 + 0.5), B = math.floor(c.B * 255 + 0.5)}
+			end
+		end
+		return out
+	end
+
 	local savePending = false
 	local function saveConfiguration()
 		if not configEnabled or destroyed then return end
@@ -1257,21 +1274,96 @@ function RayfieldLibrary:CreateWindow(Settings)
 		task.delay(0.6, function()
 			savePending = false
 			if destroyed then return end
-			local out = {}
-			for flag, element in pairs(RayfieldLibrary.Flags) do
-				if element.Type == "Toggle" or element.Type == "Slider" or element.Type == "Input" then
-					out[flag] = element.CurrentValue
-				elseif element.Type == "Dropdown" then
-					out[flag] = element.CurrentOption
-				elseif element.Type == "Keybind" then
-					out[flag] = element.CurrentKeybind
-				elseif element.Type == "ColorPicker" then
-					local c = element.Color
-					out[flag] = {R = math.floor(c.R * 255 + 0.5), G = math.floor(c.G * 255 + 0.5), B = math.floor(c.B * 255 + 0.5)}
-				end
-			end
-			writef(configFolder .. "/" .. configFile .. ".json", HttpService:JSONEncode(out))
+			writef(configFolder .. "/" .. configFile .. ".json", HttpService:JSONEncode(buildConfigOutput()))
 		end)
+	end
+
+	-- === Config manager (save/load/overwrite/delete config bernama, dipakai di tab Settings) ===
+	local function sanitizeConfigName(name)
+		name = tostring(name or ""):gsub("^%s+", ""):gsub("%s+$", "")
+		name = name:gsub("[^%w%s_%-]", "")
+		return name
+	end
+
+	local function writeConfigNamed(name)
+		if not configEnabled then return false end
+		mkfolder(configFolder)
+		return writef(configFolder .. "/" .. name .. ".json", HttpService:JSONEncode(buildConfigOutput()))
+	end
+
+	local function loadConfigNamed(name)
+		if not configEnabled then return false end
+		local raw = readf(configFolder .. "/" .. name .. ".json")
+		if not raw then
+			RayfieldLibrary:Notify({Title = "Config not found", Content = "\"" .. name .. "\" tidak ditemukan.", Duration = 3, Image = "triangle-alert"})
+			return false
+		end
+		local ok, data = pcall(function() return HttpService:JSONDecode(raw) end)
+		if not ok or type(data) ~= "table" then
+			RayfieldLibrary:Notify({Title = "Load failed", Content = "File config rusak/tidak valid.", Duration = 3, Image = "triangle-alert"})
+			return false
+		end
+		for flag, value in pairs(data) do
+			local element = RayfieldLibrary.Flags[flag]
+			if element then
+				pcall(function()
+					if element.Type == "ColorPicker" and type(value) == "table" then
+						element:Set(Color3.fromRGB(value.R or 255, value.G or 255, value.B or 255))
+					else
+						element:Set(value)
+					end
+				end)
+			end
+		end
+		RayfieldLibrary:Notify({Title = "Config loaded", Content = "\"" .. name .. "\" berhasil diterapkan.", Duration = 3, Image = "file-check"})
+		return true
+	end
+
+	local function deleteConfigNamed(name)
+		if not configEnabled or not fsAvailable then return false end
+		local path = configFolder .. "/" .. name .. ".json"
+		local ok = pcall(function()
+			if isfile(path) and delfile then
+				delfile(path)
+			end
+		end)
+		return ok
+	end
+
+	local function listConfigNames()
+		local names = {}
+		if not configEnabled or not fsAvailable or not listfiles then return names end
+		local ok, files = pcall(listfiles, configFolder)
+		if not ok or type(files) ~= "table" then return names end
+		for _, filePath in ipairs(files) do
+			local fname = tostring(filePath):match("([^/\\]+)%.json$")
+			if fname then
+				table.insert(names, fname)
+			end
+		end
+		table.sort(names, function(a, b) return a:lower() < b:lower() end)
+		return names
+	end
+
+	local configListDropdown = nil
+
+	local function refreshConfigList()
+		local names = listConfigNames()
+		if configListDropdown then
+			configListDropdown:Refresh(names)
+		end
+		return names
+	end
+
+	local function getSelectedConfig()
+		if not configListDropdown then return nil end
+		local cur = configListDropdown.CurrentOption
+		local sel = type(cur) == "table" and cur[1] or cur
+		if not sel or sel == "" then
+			RayfieldLibrary:Notify({Title = "Belum ada config dipilih", Content = "Pilih config dari daftar dulu.", Duration = 3, Image = "triangle-alert"})
+			return nil
+		end
+		return sel
 	end
 
 	task.spawn(function()
@@ -5028,6 +5120,90 @@ function RayfieldLibrary:CreateWindow(Settings)
 		end
 		SettingsTab:CreateSection("Configuration")
 		SettingsTab:CreateLabel(configEnabled and ("Saving to " .. configFolder .. "/" .. configFile .. ".json") or "Configuration saving is off", "folder")
+
+		if configEnabled then
+			local configNameBox = SettingsTab:CreateInput({
+				Name = "Config name",
+				Icon = "file-text",
+				PlaceholderText = "Config name",
+				Callback = function() end,
+			})
+
+			SettingsTab:CreateButton({
+				Name = "Create config",
+				Icon = "file-plus",
+				Callback = function()
+					local name = sanitizeConfigName(configNameBox.CurrentValue)
+					if name == "" then
+						RayfieldLibrary:Notify({Title = "Nama tidak valid", Content = "Isi nama config dulu.", Duration = 3, Image = "triangle-alert"})
+						return
+					end
+					if writeConfigNamed(name) then
+						configNameBox:Set("")
+						refreshConfigList()
+						configListDropdown:Set(name)
+						RayfieldLibrary:Notify({Title = "Config dibuat", Content = "\"" .. name .. "\" tersimpan.", Duration = 3, Image = "file-check"})
+					else
+						RayfieldLibrary:Notify({Title = "Gagal menyimpan", Content = "Tidak bisa menulis file config.", Duration = 3, Image = "triangle-alert"})
+					end
+				end,
+			})
+
+			SettingsTab:CreateDivider()
+
+			configListDropdown = SettingsTab:CreateDropdown({
+				Name = "Config list",
+				Icon = "list",
+				Options = {},
+				CurrentOption = {},
+				Callback = function() end,
+			})
+			refreshConfigList()
+
+			SettingsTab:CreateButton({
+				Name = "Load config",
+				Icon = "folder-open",
+				Callback = function()
+					local sel = getSelectedConfig()
+					if sel then loadConfigNamed(sel) end
+				end,
+			})
+
+			SettingsTab:CreateButton({
+				Name = "Overwrite config",
+				Icon = "save",
+				Callback = function()
+					local sel = getSelectedConfig()
+					if not sel then return end
+					if writeConfigNamed(sel) then
+						RayfieldLibrary:Notify({Title = "Config ditimpa", Content = "\"" .. sel .. "\" diperbarui.", Duration = 3, Image = "file-check"})
+					else
+						RayfieldLibrary:Notify({Title = "Gagal menyimpan", Content = "Tidak bisa menulis file config.", Duration = 3, Image = "triangle-alert"})
+					end
+				end,
+			})
+
+			SettingsTab:CreateButton({
+				Name = "Delete config",
+				Icon = "trash-2",
+				Callback = function()
+					local sel = getSelectedConfig()
+					if not sel then return end
+					deleteConfigNamed(sel)
+					refreshConfigList()
+					RayfieldLibrary:Notify({Title = "Config dihapus", Content = "\"" .. sel .. "\" dihapus.", Duration = 3, Image = "trash-2"})
+				end,
+			})
+
+			SettingsTab:CreateButton({
+				Name = "Refresh list",
+				Icon = "refresh-cw",
+				Callback = function()
+					refreshConfigList()
+				end,
+			})
+		end
+
 		SettingsTab:CreateSection("About")
 		SettingsTab:CreateParagraph({
 			Title = "Rayfield Gen 2 [fanmade]",
