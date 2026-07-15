@@ -86,7 +86,7 @@ end
 local rgb = Color3.fromRGB
 
 local Theme = {
-	Background = rgb(0, 0, 0),
+	Background = rgb(0, 25, 51),
 	Card = rgb(31,31, 31),
 	CardHover = rgb(39, 39,39),
 	CardSelected = rgb(48, 48,48),
