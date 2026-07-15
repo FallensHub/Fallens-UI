@@ -108,6 +108,106 @@ local Theme = {
 	NotifyBackground = rgb(16, 16,16),
 }
 
+-- Preset tema bawaan untuk fitur "Select Theme" di Settings tab.
+-- Setiap preset berisi field yang sama seperti Theme di atas.
+local PRESET_THEMES = {}
+PRESET_THEMES["Default"] = {}
+for k, v in pairs(Theme) do PRESET_THEMES["Default"][k] = v end
+
+PRESET_THEMES["Ocean"] = {
+	Background = rgb(6, 12, 18),
+	Card = rgb(15, 28, 38),
+	CardHover = rgb(20, 36, 48),
+	CardSelected = rgb(26, 45, 59),
+	CardInset = rgb(11, 22, 30),
+	SearchBox = rgb(20, 36, 48),
+	Stroke = rgb(255, 255, 255),
+	TextTitle = rgb(255, 255, 255),
+	TextBody = rgb(220, 234, 238),
+	TextSub = rgb(255, 255, 255),
+	TextMuted = rgb(96, 122, 133),
+	AccentDark = rgb(6, 66, 84),
+	Accent = rgb(0, 189, 216),
+	AccentSoft = rgb(140, 230, 245),
+	Knob = rgb(255, 255, 255),
+	KnobOff = rgb(58, 74, 80),
+	ToggleTrack = rgb(11, 22, 30),
+	BadgeBackground = rgb(0, 189, 216),
+	BadgeText = rgb(6, 30, 36),
+	NotifyBackground = rgb(9, 18, 24),
+}
+
+PRESET_THEMES["Crimson"] = {
+	Background = rgb(14, 6, 6),
+	Card = rgb(34, 20, 20),
+	CardHover = rgb(43, 25, 25),
+	CardSelected = rgb(53, 30, 30),
+	CardInset = rgb(26, 15, 15),
+	SearchBox = rgb(43, 25, 25),
+	Stroke = rgb(255, 255, 255),
+	TextTitle = rgb(255, 255, 255),
+	TextBody = rgb(238, 224, 224),
+	TextSub = rgb(255, 255, 255),
+	TextMuted = rgb(130, 105, 105),
+	AccentDark = rgb(84, 12, 20),
+	Accent = rgb(220, 38, 54),
+	AccentSoft = rgb(245, 150, 160),
+	Knob = rgb(255, 255, 255),
+	KnobOff = rgb(74, 58, 58),
+	ToggleTrack = rgb(26, 15, 15),
+	BadgeBackground = rgb(220, 38, 54),
+	BadgeText = rgb(56, 8, 13),
+	NotifyBackground = rgb(20, 10, 10),
+}
+
+PRESET_THEMES["Emerald"] = {
+	Background = rgb(5, 13, 9),
+	Card = rgb(16, 32, 24),
+	CardHover = rgb(21, 40, 30),
+	CardSelected = rgb(27, 49, 37),
+	CardInset = rgb(12, 25, 19),
+	SearchBox = rgb(21, 40, 30),
+	Stroke = rgb(255, 255, 255),
+	TextTitle = rgb(255, 255, 255),
+	TextBody = rgb(224, 238, 229),
+	TextSub = rgb(255, 255, 255),
+	TextMuted = rgb(103, 130, 113),
+	AccentDark = rgb(10, 74, 46),
+	Accent = rgb(24, 191, 110),
+	AccentSoft = rgb(150, 235, 195),
+	Knob = rgb(255, 255, 255),
+	KnobOff = rgb(60, 78, 67),
+	ToggleTrack = rgb(12, 25, 19),
+	BadgeBackground = rgb(24, 191, 110),
+	BadgeText = rgb(6, 40, 24),
+	NotifyBackground = rgb(9, 19, 14),
+}
+
+PRESET_THEMES["Light"] = {
+	Background = rgb(242, 242, 245),
+	Card = rgb(255, 255, 255),
+	CardHover = rgb(247, 247, 250),
+	CardSelected = rgb(236, 236, 241),
+	CardInset = rgb(230, 230, 235),
+	SearchBox = rgb(236, 236, 241),
+	Stroke = rgb(0, 0, 0),
+	TextTitle = rgb(20, 20, 24),
+	TextBody = rgb(45, 45, 50),
+	TextSub = rgb(20, 20, 24),
+	TextMuted = rgb(140, 140, 148),
+	AccentDark = rgb(200, 222, 245),
+	Accent = rgb(0, 122, 255),
+	AccentSoft = rgb(0, 90, 200),
+	Knob = rgb(255, 255, 255),
+	KnobOff = rgb(200, 200, 206),
+	ToggleTrack = rgb(220, 220, 226),
+	BadgeBackground = rgb(240, 166, 63),
+	BadgeText = rgb(66, 45, 15),
+	NotifyBackground = rgb(255, 255, 255),
+}
+
+local currentThemeName = "Default"
+
 local painted = {}
 
 local function paint(inst, prop, key)
@@ -1878,6 +1978,46 @@ function RayfieldLibrary:CreateWindow(Settings)
 		end)
 	end
 
+	-- Fitur "lock element": menambahkan overlay abu-abu + ikon gembok di atas
+	-- sebuah elemen (card/wrapper), yang memblokir semua input ke elemen
+	-- tersebut selama status locked aktif. `target` boleh berupa card atau
+	-- wrapper (untuk elemen yang punya bagian tambahan seperti dropdown list).
+	local function lockable(target, elementTable, initialLocked)
+		local overlay = create("Frame", {
+			Name = "LockOverlay",
+			BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+			BackgroundTransparency = 0.45,
+			Size = UDim2.new(1, 0, 1, 0),
+			ZIndex = 50,
+			Active = true,
+			Visible = initialLocked == true,
+			Parent = target,
+		})
+		round(overlay, 14)
+		local lockIcon = create("ImageLabel", {
+			Name = "LockIcon",
+			BackgroundTransparency = 1,
+			AnchorPoint = Vector2.new(1, 0),
+			Position = UDim2.new(1, -14, 0, 12),
+			Size = UDim2.fromOffset(15, 15),
+			ImageColor3 = Theme.TextMuted,
+			ZIndex = 51,
+			Parent = overlay,
+		})
+		applyLucide(lockIcon, {"lock"})
+		paint(lockIcon, "ImageColor3", "TextMuted")
+
+		elementTable.Locked = initialLocked == true
+
+		function elementTable:SetLocked(locked)
+			locked = locked and true or false
+			elementTable.Locked = locked
+			overlay.Visible = locked
+		end
+
+		return overlay
+	end
+
 	local function buildTabAPI(page, compact)
 		local Tab = {}
 		Tab.Page=page
@@ -3337,6 +3477,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 				label.Text = newName
 				card:SetAttribute("SearchName", newName or "")
 			end
+			lockable(card, ButtonValue, ButtonSettings.Locked)
 			return ButtonValue
 		end
 
@@ -3413,6 +3554,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 				Toggle.Flag = ToggleSettings.Flag
 				RayfieldLibrary.Flags[ToggleSettings.Flag] = Toggle
 			end
+			lockable(card, Toggle, ToggleSettings.Locked)
 			return Toggle
 		end
 
@@ -3593,6 +3735,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 				Slider.Flag = SliderSettings.Flag
 				RayfieldLibrary.Flags[SliderSettings.Flag] = Slider
 			end
+			lockable(card, Slider, SliderSettings.Locked)
 			return Slider
 		end
 
@@ -3702,6 +3845,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 				Input.Flag = InputSettings.Flag
 				RayfieldLibrary.Flags[InputSettings.Flag] = Input
 			end
+			lockable(card, Input, InputSettings.Locked)
 			return Input
 		end
 
@@ -4039,6 +4183,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 				Dropdown.Flag=DropdownSettings.Flag
 				RayfieldLibrary.Flags[DropdownSettings.Flag] = Dropdown
 			end
+			lockable(card, Dropdown, DropdownSettings.Locked)
 			return Dropdown
 		end
 
@@ -4175,6 +4320,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 				Keybind.Flag = KeybindSettings.Flag
 				RayfieldLibrary.Flags[KeybindSettings.Flag] = Keybind
 			end
+			lockable(card, Keybind, KeybindSettings.Locked)
 			return Keybind
 		end
 
@@ -4649,6 +4795,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 				ColorPicker.Flag = ColorPickerSettings.Flag
 				RayfieldLibrary.Flags[ColorPickerSettings.Flag] = ColorPicker
 			end
+			lockable(card, ColorPicker, ColorPickerSettings.Locked)
 
 			refresh()
 			return ColorPicker
@@ -4854,12 +5001,37 @@ function RayfieldLibrary:CreateWindow(Settings)
 				Window:SetUIScale(value / 100)
 			end,
 		})
+		do
+			local themeNames = {}
+			for name in pairs(PRESET_THEMES) do
+				table.insert(themeNames, name)
+			end
+			table.sort(themeNames, function(a, b)
+				if a == "Default" then return true end
+				if b == "Default" then return false end
+				return a < b
+			end)
+			SettingsTab:CreateDropdown({
+				Name = "Select Theme",
+				Icon = "palette",
+				Options = themeNames,
+				CurrentOption = currentThemeName,
+				Callback = function(selected)
+					local themeName = type(selected) == "table" and selected[1] or selected
+					local preset = themeName and PRESET_THEMES[themeName]
+					if preset then
+						currentThemeName = themeName
+						Window.ModifyTheme(preset)
+					end
+				end,
+			})
+		end
 		SettingsTab:CreateSection("Configuration")
 		SettingsTab:CreateLabel(configEnabled and ("Saving to " .. configFolder .. "/" .. configFile .. ".json") or "Configuration saving is off", "folder")
 		SettingsTab:CreateSection("About")
 		SettingsTab:CreateParagraph({
 			Title = "Rayfield Gen 2 [fanmade]",
-			Content = "Unofficial rebuild of the Rayfield Interface Suite. Original Rayfield by Sirius.",
+			Content = "Unofficial rebuild of the Rayfield Interface Suite. Original Rayfield by Sirius. Modify by Fallens",
 		})
 		SettingsTab:CreateButton({
 			Name = "Unload interface",
