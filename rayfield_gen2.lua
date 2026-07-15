@@ -86,26 +86,26 @@ end
 local rgb = Color3.fromRGB
 
 local Theme = {
-	Background = rgb(0, 25, 51),
-	Card = rgb(31,31, 31),
-	CardHover = rgb(39, 39,39),
-	CardSelected = rgb(48, 48,48),
-	CardInset = rgb(24, 24,24),
-	SearchBox = rgb(44, 44, 44),
-	Stroke = rgb(255,255, 255),
+	Background = rgb(7, 13, 23),        -- navy nyaris hitam, seperti badan sayap
+	Card = rgb(16, 26, 40),
+	CardHover = rgb(21, 34, 51),
+	CardSelected = rgb(27, 42, 61),
+	CardInset = rgb(12, 20, 32),
+	SearchBox = rgb(21, 34, 51),
+	Stroke = rgb(255, 255, 255),
 	TextTitle = rgb(255, 255, 255),
-	TextBody = rgb(233, 233, 233),
+	TextBody = rgb(224, 234, 245),
 	TextSub = rgb(255, 255, 255),
-	TextMuted = rgb(110,110, 110),
-	AccentDark = rgb(0, 51, 102),
-	Accent = rgb(0, 128, 255),
-	AccentSoft = rgb(153, 204,255),
+	TextMuted = rgb(108, 128, 150),
+	AccentDark = rgb(0, 51, 102),        -- biru gelap, seperti bagian dalam sayap
+	Accent = rgb(35, 145, 255),          -- biru terang utama, seperti garis tengah sayap
+	AccentSoft = rgb(130, 210, 255),     -- cyan muda, seperti kilau tepi sayap
 	Knob = rgb(255, 255, 255),
-	KnobOff = rgb(66, 68, 70),
-	ToggleTrack = rgb(18, 18, 18),
-	BadgeBackground = rgb(240,166, 63),
-	BadgeText = rgb(66, 45,15),
-	NotifyBackground = rgb(16, 16,16),
+	KnobOff = rgb(46, 58, 72),
+	ToggleTrack = rgb(12, 20, 32),
+	BadgeBackground = rgb(130, 210, 255),
+	BadgeText = rgb(6, 26, 48),
+	NotifyBackground = rgb(10, 17, 27),
 }
 
 -- Preset tema bawaan untuk fitur "Select Theme" di Settings tab.
